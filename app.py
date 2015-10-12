@@ -6,7 +6,7 @@ import sys
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write("Hello, world mind radar!!FFF")
+        self.render('app.html')
 
 
 settings = {
@@ -15,6 +15,7 @@ settings = {
     'cookie_secret'  : 'iafjo3i4j909-awjg23ru09aa38*Y#(*Rh',
     'login_url'      : '/login',
     'debug'          : True,
+    'autoreload'     : False,
 }
 
 

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mind Radar</title>
+    <style>
+      body{
+        background-color: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='page-root'></div>
+    <script src="/static/js/react-0.13.2/react-with-addons.js"></script>
+    <script src="/static/js/react-0.13.2/JSXTransformer.js"></script>
+    <script type='text/jsx' src="/static/js/mind-radar.jsx"></script>
+    <script type='text/jsx'>
+      React.render(<MR.RadarPage />, document.getElementById('page-root'));
+    </script>
+  </body>
+</html>
