@@ -16,29 +16,37 @@ performance.now = (function() {
 })();
 
 
+countWeightWithChildNum = function(_weight, numOfChild){
+  return _weight*(1+numOfChild*0.1);
+}
+
+
 MR.Radar = function(obj){
   this.name = obj.name;
   this._weight = obj.weight;
   this.children = [];
-  this.childOffsetWeight = 1;
+  this.childOffsetWeight = (obj.children&&obj.children.length)?0:1;
 
   this.startAg = 0;
   this.endAg = Math.PI * 2;
   this.weight = 0;
+  this.numOfChild = 0;
 
   this.transformState = {};
 
-  this.updateTag = true;
+  this.updateTag = false;
   for(var i in obj.children){
-    this.childOffsetWeight = 0;
     this.children.push(new MR.Radar(obj.children[i]));
+    this.numOfChild += this.children[i].numOfChild+1;
   }
-
-  this.transformTo('weight', this._weight, 1000);
+  
+  this.transformTo('weight', countWeightWithChildNum(this._weight, this.numOfChild), 1000);
   // if(obj instanceof MR.radar){
   //     this.
   // }
 }
+
+MR.Radar.prototype.CHILDFIX = 0.1;
 
 MR.Radar.prototype.getWeight = function(){
   return this.weight;
@@ -124,11 +132,11 @@ MR.Radar.prototype.updateComponent = function(){
     for(var i in this.children){
       this.numOfChild += this.children[i].numOfChild;
     }
+    this.transformTo('weight', countWeightWithChildNum(this._weight, this.numOfChild), 1000);
     this.updateTag = false;
   }
   
   // Update transformState
-    // var tag = true, times = window.performance.now()-this.transformStamp;
   for(var v in this.transformState){
     var times = window.performance.now()-this.transformState[v].stamp;
     this[v] += this.transformState[v].unit*times;
