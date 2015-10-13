@@ -118,7 +118,7 @@ MR.Radar.prototype.renderChildren = function(ctx, x, y, r, offsetR, mouseHovorRa
 }
 
 MR.Radar.prototype.update = function(){
-  var tag = false;
+  var tag = this.updateTag;
   if(this.updateChildren()){
     tag = this.updateTag = true;
   }
