@@ -17,69 +17,162 @@ performance.now = (function() {
 
 
 MR.Radar = function(obj){
-    this.name = obj.name;
-    this.weight = obj.weight;
-    this.children = [];
+  this.name = obj.name;
+  this._weight = obj.weight;
+  this.children = [];
+  this.childOffsetWeight = 1;
 
-    this.startAg = 0;
-    this.endAg = Math.PI * 2;
-    for(var i in obj.children){
-      this.children.push(new MR.Radar(obj.children[i]));
+  this.startAg = 0;
+  this.endAg = Math.PI * 2;
+  this.weight = 0;
+
+  this.transformState = {};
+
+  this.updateTag = true;
+  for(var i in obj.children){
+    this.childOffsetWeight = 0;
+    this.children.push(new MR.Radar(obj.children[i]));
+  }
+
+  this.transformTo('weight', this._weight, 1000);
+  // if(obj instanceof MR.radar){
+  //     this.
+  // }
+}
+
+MR.Radar.prototype.getWeight = function(){
+  return this.weight;
+}
+
+MR.Radar.prototype.appendChild = function(child){
+  console.log('append Child');
+  if(this.children.length === 0){
+    this.transformTo('childOffsetWeight', 0, 1000);
+  }
+  this.children.push(child);
+  this.updateTag = true;
+}
+
+MR.Radar.prototype.transformTo = function(name, value, ms){
+  if(typeof(name) == 'undefined' || typeof(value) != 'number')return false;
+  if(typeof(ms) == 'undefined')ms = 1;
+  if(name in this.transformState){
+    this[name] = this.transformState[name].end;
+  }
+  this.transformState[name] = {
+    stamp: window.performance.now(),
+    unit: (value - this[name])/ms,
+    end: value
+  }
+}
+
+MR.Radar.prototype.render = function(ctx, x, y, r, offsetR, mouseHovorRadar){
+  this.renderComponent(ctx, x, y, r, offsetR, mouseHovorRadar===this);
+  this.renderChildren(ctx, x, y, r, offsetR, mouseHovorRadar);
+}
+
+MR.Radar.prototype.renderComponent = function(ctx, x, y, r, offsetR, isHover){
+  var fullR = r + offsetR;
+  ctx.beginPath();
+  if(offsetR === 0){
+    ctx.arc(x, y, r, 0, Math.PI*2,false);
+  }else{
+    ctx.moveTo(x+offsetR*Math.cos(this.startAg), y+offsetR*Math.sin(this.startAg));
+    ctx.lineTo(x+fullR*Math.cos(this.startAg), y+fullR*Math.sin(this.startAg));
+    ctx.arc(x, y, fullR, this.startAg, this.endAg, false);
+    ctx.lineTo(x+offsetR*Math.cos(this.endAg), y+offsetR*Math.sin(this.endAg));
+    ctx.arc(x, y, offsetR, this.endAg, this.startAg, true);
+  }
+  ctx.fillStyle = 'hsl('+((this.startAg+this.endAg)*90/Math.PI)+', 80%, '+(isHover?90:50)+'%)';
+  ctx.fill();
+  // ctx.strokeStyle = 'hsl('+((this.startAg+this.endAg)*180/Math.PI)+', 100%, 25%)';
+  ctx.stroke();
+}
+
+MR.Radar.prototype.renderChildren = function(ctx, x, y, r, offsetR, mouseHovorRadar){
+  // Counting children's startAg and endAg
+  var sumWeight = this.childOffsetWeight;
+  for(var i in this.children){
+    sumWeight += this.children[i].getWeight();
+  }
+  var unitAg = (this.endAg - this.startAg) / sumWeight;
+  var startAg = this.startAg;
+  for(var i in this.children){
+    this.children[i].startAg = startAg;
+    if(i===this.children.length-1 && this.childOffsetWeight===0){
+      this.children[i].endAg = this.endAg;
+    }else{
+      startAg += unitAg*this.children[i].getWeight();
+      this.children[i].endAg = startAg;
     }
-    // if(obj instanceof MR.radar){
-    //     this.
-    // }
-    this.appendChild = function(child){
-      console.log('append Child');
-      this.children.push(child);
+    this.children[i].render(ctx, x, y, r, offsetR+r, mouseHovorRadar);
+  }
+}
+
+MR.Radar.prototype.update = function(){
+  var tag = false;
+  if(this.updateChildren()){
+    tag = this.updateTag = true;
+  }
+  this.updateComponent();
+  return tag;
+}
+
+MR.Radar.prototype.updateComponent = function(){
+  if(this.updateTag){
+    this.numOfChild = this.children.length;
+    for(var i in this.children){
+      this.numOfChild += this.children[i].numOfChild;
     }
+    this.updateTag = false;
+  }
+  
+  // Update transformState
+    // var tag = true, times = window.performance.now()-this.transformStamp;
+  for(var v in this.transformState){
+    var times = window.performance.now()-this.transformState[v].stamp;
+    this[v] += this.transformState[v].unit*times;
+    if(this.transformState[v].unit>0&&this[v]>=this.transformState[v].end||
+      this.transformState[v].unit<0&&this[v]<=this.transformState[v].end){
+      this[v] = this.transformState[v].end;
+      delete this.transformState[v];
+    }
+  }
+}
+
+MR.Radar.prototype.updateChildren = function(){
+  var tag = false;
+  for(var i in this.children){
+    tag |= this.children[i].update();
+  }
+  return tag;
 }
 
 
 MR.RadarPage = React.createClass({
   getInitialState: function(){
     var radar = new MR.Radar({
-      name: '新智雷達',
+      name: '心智雷達',
       weight: 1,
     });
     _sam_radar = radar;
     return {
       radar: radar,
-      selectRadar: radar,
-      fps: 0
+      selectRadar: radar
     };
-  },
-  render_canvas: function(){
-    var that = this, tep1 = performance.now(), tep2, fps = 0, _render = function(){
-      // fps
-      fps += 1;
-      tep2 = performance.now();
-      if(tep2-tep1 >= 1000){
-        that.setState({fps:fps});
-        fps = 0;
-        tep1 = tep2;
-      }
-      that.refs.radar_box.render_radar(that.state.radar);
-      window.requestAnimationFrame(_render);
-    };
-    _render();
   },
   handleSelect: function(radar){
     this.setState({selectRadar: radar});
   },
-  componentDidMount: function(){
-    this.render_canvas();
-    console.log("JIZZ");
-  },
+  // componentDidMount: function(){
+  //   ;
+  // },
   render: function(){
     return (
       <table>
         <tr>
           <td>
             <MR.RadarCanvasBox ref='radar_box' height={SH} width={SW} radar={this.state.radar} onSelect={this.handleSelect}/>
-          </td>
-          <td>
-            <div id="fps">fps: {this.state.fps}/s</div>
           </td>
           <td>
             <MR.RadarInfoBox radar={this.state.selectRadar}/>
@@ -94,52 +187,41 @@ MR.RadarPage = React.createClass({
 MR.RadarCanvasBox = React.createClass({
   getInitialState: function(){
     return {
+      fps: 0,
       r: 50,
       mouseR: 0,
       mouseAg: 0,
       mouseHovorRadar: null
     };
   },
-  render_radar: function(radar, offsetR, ctx){
-    if(typeof(offsetR) == 'undefined')offsetR = 0;
-    var midx = this.props.width/2, midy = this.props.height/2, r = offsetR+this.state.r;
-    if(typeof(ctx) == 'undefined'){
-      ctx = React.findDOMNode(this.refs.canvas).getContext('2d');
-      ctx.clearRect(0,0,SW,SH);
-      ctx.beginPath();
-      ctx.moveTo(midx,midy);
-      ctx.lineTo(midx+this.state.mouseR*Math.cos(this.state.mouseAg),midy+this.state.mouseR*Math.sin(this.state.mouseAg));
-      ctx.stroke();
-    }
-    // Drow the radar unit
-    ctx.beginPath();
-    ctx.moveTo(midx+offsetR*Math.cos(radar.startAg),midy+offsetR*Math.sin(radar.startAg));
-    ctx.lineTo(midx+r*Math.cos(radar.startAg),midy+r*Math.sin(radar.startAg));
-    ctx.arc(midx,midy,r,radar.startAg,radar.endAg,false);
-    ctx.lineTo(midx+offsetR*Math.cos(radar.endAg),midy+offsetR*Math.sin(radar.endAg));
-    ctx.arc(midx,midy,offsetR,radar.endAg,radar.startAg,true);
-    ctx.fillStyle = 'hsl('+((radar.startAg+radar.endAg)*90/Math.PI)+', 80%, '+(radar==this.state.mouseHovorRadar?90:50)+'%)';
-    ctx.fill();
-    // ctx.strokeStyle = 'hsl('+((radar.startAg+radar.endAg)*180/Math.PI)+', 100%, 25%)';
-    ctx.stroke();
-
-    // Drow children
-    var sumWeight = 0;
-    for(var i in radar.children){
-      sumWeight += radar.children[i].weight;
-    }
-    var unitAg = (radar.endAg - radar.startAg) / sumWeight;
-    var startAg = radar.startAg;
-    for(var i in radar.children){
-      radar.children[i].startAg = startAg;
-      if(i==radar.children.length-1){
-        radar.children[i].endAg = radar.endAg;
-      }else{
-        startAg += unitAg*radar.children[i].weight;
-        radar.children[i].endAg = startAg;
+  ctxRender: function(ctx){
+    var that = this, tep1 = performance.now(), tep2, fps = 0, _render = function(){
+      // fps
+      fps += 1;
+      tep2 = performance.now();
+      if(tep2-tep1 >= 1000){
+        that.setState({fps:fps});
+        fps = 0;
+        tep1 = tep2;
       }
-      this.render_radar(radar.children[i], r, ctx);
-    }
+      // Render Radar
+      that.props.radar.update();
+      ctx.clearRect(0, 0, that.props.width, that.props.height);
+      that.props.radar.render(ctx, that.props.width/2, that.props.height/2, that.state.r, 0, that.state.mouseHovorRadar);
+
+      // Drow mouse line
+      that.drowMouseLine(ctx, that.props.width/2, that.props.height/2, that.state.mouseR, that.state.mouseAg);
+
+      // Loop
+      window.requestAnimationFrame(_render);
+    };
+    _render();
+  },
+  drowMouseLine: function(ctx, x, y, r, ag){
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x+r*Math.cos(ag), y+r*Math.sin(ag));
+    ctx.stroke();
   },
   handleMouseMove: function(e){
     var offset = React.findDOMNode(this.refs.canvas).getBoundingClientRect(),
@@ -154,7 +236,9 @@ MR.RadarCanvasBox = React.createClass({
         _chekc = function(radar, offsetR){
           var r = offsetR + that.state.r;
           if(mouseR>=offsetR&&mouseR<=r&&radar.startAg<=mouseAg&&mouseAg<=radar.endAg){
-            that.setState({mouseHovorRadar: radar});
+            if(that.state.mouseHovorRadar !== radar){
+              that.setState({mouseHovorRadar: radar});
+            }
             return true;
           }else{
             for(var i in radar.children){
@@ -176,9 +260,15 @@ MR.RadarCanvasBox = React.createClass({
     canvas.width  = this.props.width;
     canvas.height = this.props.height;
     var ctx = canvas.getContext('2d');
+    this.ctxRender(ctx);
   },
   render: function(){
-    return <canvas ref='canvas' onMouseMove={this.handleMouseMove} onClick={this.handleClick}></canvas>;
+    return (
+      <div>
+        <div>fps: {this.state.fps}/s</div>
+        <canvas ref='canvas' onMouseMove={this.handleMouseMove} onClick={this.handleClick}></canvas>
+      </div>
+    );
   }
 });
 
