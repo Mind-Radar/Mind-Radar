@@ -95,6 +95,18 @@ MR.Radar.prototype.renderComponent = function(ctx, x, y, r, offsetR, isHover){
   ctx.fill();
   // ctx.strokeStyle = 'hsl('+((this.startAg+this.endAg)*180/Math.PI)+', 100%, 25%)';
   ctx.stroke();
+
+  // Text - Title
+  ctx.font = '16px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'hsl('+((this.startAg+this.endAg)*90/Math.PI+180)+', 80%, '+(isHover?20:50)+'%)';
+  if(offsetR ===0 ){
+    ctx.fillText(this.name, x, y);
+  }else{
+    var textAg = (this.startAg+this.endAg)/2, textR = offsetR + r/2;
+    ctx.fillText(this.name, x+textR*Math.cos(textAg), y+textR*Math.sin(textAg));
+  }
 }
 
 MR.Radar.prototype.renderChildren = function(ctx, x, y, r, offsetR, mouseHovorRadar){
