@@ -263,6 +263,15 @@ MR.RadarCanvasBox = React.createClass({
       this.props.onSelect(this.state.mouseHovorRadar);
     }
   },
+  handleScaling: function(v){
+    var that = this;
+    return function(e){
+      var r = that.state.r;
+      if(v&&r<300)r*=1.5;
+      else if(!v&&r>10)r/=1.5;
+      that.setState({r: r});
+    };
+  },
   componentDidMount: function(){
     var canvas = React.findDOMNode(this.refs.canvas);
     canvas.width  = this.props.width;
@@ -274,6 +283,10 @@ MR.RadarCanvasBox = React.createClass({
     return (
       <div>
         <div>fps: {this.state.fps}/s</div>
+        <div>
+          <button onClick={this.handleScaling(0)}>縮小</button>
+          <button onClick={this.handleScaling(1)}>放大</button>
+        </div>
         <canvas ref='canvas' onMouseMove={this.handleMouseMove} onClick={this.handleClick}></canvas>
       </div>
     );
