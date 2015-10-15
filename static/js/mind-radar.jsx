@@ -50,11 +50,13 @@ MR.Radar = function(obj){
 MR.Radar.CHILDFIX = 0.1;
 
 MR.Radar.tan3 = function(y, x){
+  // Turn the range of tan2 from [-PI,PI] to [0, 2*PI]
   ag =  Math.atan2(y, x);
   return ag<0?(ag+2*Math.PI):ag;
 }
 
 MR.Radar.inRange = function(a, v, b){
+  // Check if v is in [a, b]
   var tmp;
   if(a>b)tmp=a,a=b,b=tmp;
   return a<=v&&v<=b;
@@ -87,8 +89,8 @@ MR.Radar.prototype.transformTo = function(name, value, ms){
 }
 
 MR.Radar.prototype.drawName = function(ctx, x, y, r, offsetR, isHover){
-  // Count the width of this component, and draw the name of this component.
-  // Count the width.
+  // Calculate the width of this component, and draw the name of this component.
+  // Calculate the width.
   var fullR = offsetR+r, midR = offsetR+r/2, midAg = (this.startAg+this.endAg)/2,
       X = [], textY = midR*Math.sin(midAg), tmp;
   // big circle
@@ -164,7 +166,7 @@ MR.Radar.prototype.renderComponent = function(ctx, x, y, r, offsetR, isHover){
 }
 
 MR.Radar.prototype.renderChildren = function(ctx, x, y, r, offsetR, mouseHovorRadar){
-  // Counting children's startAg and endAg
+  // Setting children's startAg and endAg
   var sumWeight = this.childOffsetWeight;
   for(var i in this.children){
     sumWeight += this.children[i].getWeight();
@@ -292,7 +294,7 @@ MR.RadarCanvasBox = React.createClass({
       // Drow mouse line
       that.drowMouseLine(ctx, that.props.width/2, that.props.height/2, that.state.mouseR, that.state.mouseAg);
 
-      // Loop
+      // Animate Loop
       window.requestAnimationFrame(_render);
     };
     _render();
@@ -310,9 +312,6 @@ MR.RadarCanvasBox = React.createClass({
         midx = this.props.width/2,
         midy = this.props.height/2,
         mouseR = Math.sqrt((x-midx)*(x-midx)+(y-midy)*(y-midy)),
-        // _mouseAg = Math.atan((y-midy)/(x-midx))+((x-midx)<0?Math.PI:0),
-        // _mouseAg =  Math.atan2((y-midy), (x-midx));
-        // mouseAg = _mouseAg<0?(_mouseAg+2*Math.PI):_mouseAg;
         mouseAg = MR.Radar.tan3((y-midy), (x-midx));
         that = this,
         _chekc = function(radar, offsetR){
