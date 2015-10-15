@@ -46,7 +46,19 @@ MR.Radar = function(obj){
   // }
 }
 
-MR.Radar.prototype.CHILDFIX = 0.1;
+// static var
+MR.Radar.CHILDFIX = 0.1;
+
+MR.Radar.tan3 = function(y, x){
+  ag =  Math.atan2(y, x);
+  return ag<0?(ag+2*Math.PI):ag;
+}
+
+MR.Radar.inRange = function(a, v, b){
+  var tmp;
+  if(a>b)tmp=a,a=b,b=tmp;
+  return a<=v&&v<=b;
+}
 
 MR.Radar.prototype.getWeight = function(){
   return this.weight;
@@ -74,9 +86,60 @@ MR.Radar.prototype.transformTo = function(name, value, ms){
   }
 }
 
-MR.Radar.prototype.render = function(ctx, x, y, r, offsetR, mouseHovorRadar){
-  this.renderComponent(ctx, x, y, r, offsetR, mouseHovorRadar===this);
-  this.renderChildren(ctx, x, y, r, offsetR, mouseHovorRadar);
+MR.Radar.prototype.drawName = function(ctx, x, y, r, offsetR, isHover){
+  // Count the width of this component, and draw the name of this component.
+  // Count the width.
+  var fullR = offsetR+r, midR = offsetR+r/2, midAg = (this.startAg+this.endAg)/2,
+      X = [], textY = midR*Math.sin(midAg), tmp;
+  // big circle
+  tmp = Math.sqrt(fullR*fullR-textY*textY);
+  if(MR.Radar.inRange(this.startAg, MR.Radar.tan3(textY, tmp), this.endAg))X.push(tmp);
+  if(MR.Radar.inRange(this.startAg, MR.Radar.tan3(textY, -tmp), this.endAg))X.push(-tmp);
+  //small circle
+  if(offsetR*offsetR-textY*textY>=0){
+    tmp = Math.sqrt(offsetR*offsetR-textY*textY);
+    if(MR.Radar.inRange(this.startAg, MR.Radar.tan3(textY, tmp), this.endAg))X.push(tmp);
+    if(tmp!==0&&MR.Radar.inRange(this.startAg, MR.Radar.tan3(textY, -tmp), this.endAg))X.push(-tmp);
+  }
+  // startAg line and endAg line
+  if(Math.sin(this.startAg)*textY>0){
+    tmp = textY/Math.tan(this.startAg);
+    if(MR.Radar.inRange(offsetR, Math.sqrt(tmp*tmp+textY*textY), fullR))X.push(tmp);
+  }
+  if(Math.sin(this.endAg)*textY>0){
+    tmp = textY/Math.tan(this.endAg);
+    if(MR.Radar.inRange(offsetR, Math.sqrt(tmp*tmp+textY*textY), fullR))X.push(tmp);
+  }
+
+  // Find left and right dot
+  var l,r;
+  if(X.length>2){
+    var mi = 0, midx = midR*Math.cos(midAg);
+    for(var i in X){
+      if(Math.abs(X[i]-midx)<Math.abs(X[mi]-midx))mi=i;
+    }
+    l = X[mi];
+    X.splice(mi,1);
+    mi = 0;
+    for(var i in X){
+      if(Math.abs(X[i]-midx)<Math.abs(X[mi]-midx))mi=i;
+    }
+    r = X[mi];
+  }else{
+    l = X[0], r = X[1];
+  }
+  
+  // Draw the name.
+  ctx.font = 'bold 16px Arial,微軟正黑體';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'hsl('+((this.startAg+this.endAg)*90/Math.PI+180)+', 80%, '+(isHover?20:50)+'%)';
+  var pstr = this.name, len = this.name.length, textWidth = Math.abs(l-r);
+  while(len>=0&&ctx.measureText(pstr).width>textWidth){
+    len -= 1;
+    pstr = this.name.substring(0,len)+'...';
+  }
+  ctx.fillText(pstr, x+(l+r)/2, y+textY, textWidth);
 }
 
 MR.Radar.prototype.renderComponent = function(ctx, x, y, r, offsetR, isHover){
@@ -96,17 +159,8 @@ MR.Radar.prototype.renderComponent = function(ctx, x, y, r, offsetR, isHover){
   // ctx.strokeStyle = 'hsl('+((this.startAg+this.endAg)*180/Math.PI)+', 100%, 25%)';
   ctx.stroke();
 
-  // Text - Title
-  ctx.font = '16px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'hsl('+((this.startAg+this.endAg)*90/Math.PI+180)+', 80%, '+(isHover?20:50)+'%)';
-  if(offsetR ===0 ){
-    ctx.fillText(this.name, x, y);
-  }else{
-    var textAg = (this.startAg+this.endAg)/2, textR = offsetR + r/2;
-    ctx.fillText(this.name, x+textR*Math.cos(textAg), y+textR*Math.sin(textAg));
-  }
+  // Text - Name
+  this.drawName(ctx, x, y, r, offsetR, isHover);
 }
 
 MR.Radar.prototype.renderChildren = function(ctx, x, y, r, offsetR, mouseHovorRadar){
@@ -129,13 +183,9 @@ MR.Radar.prototype.renderChildren = function(ctx, x, y, r, offsetR, mouseHovorRa
   }
 }
 
-MR.Radar.prototype.update = function(){
-  var tag = this.updateTag;
-  if(this.updateChildren()){
-    tag = this.updateTag = true;
-  }
-  this.updateComponent();
-  return tag;
+MR.Radar.prototype.render = function(ctx, x, y, r, offsetR, mouseHovorRadar){
+  this.renderComponent(ctx, x, y, r, offsetR, mouseHovorRadar===this);
+  this.renderChildren(ctx, x, y, r, offsetR, mouseHovorRadar);
 }
 
 MR.Radar.prototype.updateComponent = function(){
@@ -167,6 +217,16 @@ MR.Radar.prototype.updateChildren = function(){
   }
   return tag;
 }
+
+MR.Radar.prototype.update = function(){
+  var tag = this.updateTag;
+  if(this.updateChildren()){
+    tag = this.updateTag = true;
+  }
+  this.updateComponent();
+  return tag;
+}
+
 
 
 MR.RadarPage = React.createClass({
@@ -250,8 +310,10 @@ MR.RadarCanvasBox = React.createClass({
         midx = this.props.width/2,
         midy = this.props.height/2,
         mouseR = Math.sqrt((x-midx)*(x-midx)+(y-midy)*(y-midy)),
-        _mouseAg = Math.atan((y-midy)/(x-midx))+((x-midx)<0?Math.PI:0),
-        mouseAg = _mouseAg<0?(_mouseAg+2*Math.PI):_mouseAg;
+        // _mouseAg = Math.atan((y-midy)/(x-midx))+((x-midx)<0?Math.PI:0),
+        // _mouseAg =  Math.atan2((y-midy), (x-midx));
+        // mouseAg = _mouseAg<0?(_mouseAg+2*Math.PI):_mouseAg;
+        mouseAg = MR.Radar.tan3((y-midy), (x-midx));
         that = this,
         _chekc = function(radar, offsetR){
           var r = offsetR + that.state.r;
