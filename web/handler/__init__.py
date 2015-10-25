@@ -11,11 +11,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from ..db import SQL_Session#, User, GroupList, Login_Session
-# from ..util  import webassets_react
+from ..util  import webassets_react
 
 import functools
 import os
-# from webassets import Environment, Bundle
+from webassets import Environment, Bundle
 
 import tornado.web
 from tornado.escape import json_encode
@@ -23,8 +23,8 @@ from tornado.options import options
 
 
 class BaseHandler(tornado.web.RequestHandler):
-    def initialize(self, is_api=True):
-        self.is_api = is_api
+    def initialize(self):
+        pass
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -57,42 +57,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_template_namespace(self):
         _ = super(BaseHandler, self).get_template_namespace()
-        
-        # self.assets = Environment(
-        #         os.path.join(os.path.dirname(__file__), '../static'),'/static')
-        # css_all = Bundle(
-        #         'css/bootstrap.min.css',
-        #         'css/material.min.css',
-        #         Bundle('css/schoolcms.css','css/dropdown.css', filters='cssmin'),
-        #         'outdatedbrowser/outdatedbrowser.min.css',
-        #         output='dict/plugin.min.css')
-        # js_all = Bundle(
-        #         Bundle(
-        #             'outdatedbrowser/outdatedbrowser.min.js',
-        #             'react-0.13.2/react-with-addons.min.js',
-        #             'js/jquery-2.1.3.min.js',
-        #             'js/bootstrap.min.js',
-        #             'js/react-bootstrap.min.js',
-        #             'js/react-mini-router.min.js',
-        #             'js/marked.min.js',
-        #             'js/material.min.js',
-        #             'js/isMobile.min.js',
-        #             'js/moment-with-locales.min.js',
-        #             'js/dropdown.js',filters='jsmin'),
-        #         Bundle(
-        #             'schoolcms/init.jsx',
-        #             'schoolcms/mixin/*.jsx',
-        #             'schoolcms/component/*.jsx',
-        #             'schoolcms/page/*.jsx', filters=('react','jsmin')),
-        #         output='dict/plugin.min.js')
-        # self.assets.register('css_all', css_all)
-        # self.assets.register('js_all', js_all)
-
-        # _['css_urls'] = self.assets['css_all'].urls()
-        # _['js_urls'] = self.assets['js_all'].urls()
-
-        # _['current_user'] = self.current_user.to_dict() if self.current_user else None
-        # _['current_groups'] = groups
+        _['current_user'] = self.current_user.to_dict() if self.current_user else None
 
         # Call this to set the cookie
         self.xsrf_token
@@ -113,6 +78,47 @@ class BaseHandler(tornado.web.RequestHandler):
 
 
 class AppHandler(BaseHandler):
+    def initialize(self, static_path, **kw):
+        super(AppHandler, self).initialize(*a, **kw)
+        self.static_path = static_path
+
+    def get_template_namespace(self):
+        _ = super(AppHandler, self).get_template_namespace()
+        
+        self.assets = Environment(self.static_path, '/static')
+        css_all = Bundle(
+                'css/bootstrap.min.css',
+                'css/material.min.css',
+                Bundle('css/custom.css','css/dropdown.css', filters='cssmin'),
+                'outdatedbrowser/outdatedbrowser.min.css',
+                output='dict/plugin.min.css')
+        js_all = Bundle(
+                Bundle(
+                    'outdatedbrowser/outdatedbrowser.min.js',
+                    'react-0.13.2/react-with-addons.min.js',
+                    'js/jquery-2.1.3.min.js',
+                    'js/bootstrap.min.js',
+                    'js/react-bootstrap.min.js',
+                    'js/react-mini-router.min.js',
+                    'js/marked.min.js',
+                    'js/material.min.js',
+                    'js/isMobile.min.js',
+                    'js/moment-with-locales.min.js',
+                    'js/dropdown.js',filters='jsmin'),
+                Bundle(
+                    'jsx/init.jsx',
+                    # 'jsx/mixin/*.jsx',
+                    'jsx/lib/*.jsx',
+                    'jsx/page/*.jsx', filters=('react','jsmin')),
+                output='dict/plugin.min.js')
+        self.assets.register('css_all', css_all)
+        self.assets.register('js_all', js_all)
+
+        _['css_urls'] = self.assets['css_all'].urls()
+        _['js_urls'] = self.assets['js_all'].urls()
+
+        return _
+
     def get(self):
         self.render('app.html')
 
