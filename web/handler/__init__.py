@@ -117,4 +117,6 @@ class AppHandler(BaseHandler):
         self.render('app.html')
 
 
-# from .indexhandler import IndexHandler
+from .indexhandler import IndexHandler
+from .viewhandler import ViewHandler
+from .edithandler import EditHandler

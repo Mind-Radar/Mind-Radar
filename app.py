@@ -14,7 +14,7 @@ from web.util.parse_config import parse_config
 config_path = os.path.join(os.path.dirname(__file__), 'config.py')
 parse_config(config_path)
 
-from web.handler import AppHandler
+from web.handler import AppHandler, IndexHandler, ViewHandler, EditHandler
 from web.db import SessionGen, System
 from web.db import version as db_version
 
@@ -60,8 +60,9 @@ def make_app(route):
 if __name__ == '__main__':
     check_db()
     app = make_app([
-        (r"/", AppHandler),
-        # (r"/index.py", MainHandler),
+        (r"/", IndexHandler),
+        (r"/radar/?", ViewHandler),
+        (r"/radar/edit/?", EditHandler),
     ])
     server = HTTPServer(app, xheaders=True)
     server.listen(options.port)
