@@ -1,0 +1,248 @@
+<!DOCTYPE HTML>
+{#
+  
+  Html Template Base.
+
+#}
+<html lang="zh-Hant">
+  <head>
+    <title>Mind Radar</title>
+    <link rel="shortcut icon" href="{{ static_url('favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    {% block Meta %}
+    {% end %}
+    <style>
+      body,h1,h2,h3,h4,h5,h6{
+        font-family: Arial, "文泉驛正黑", "WenQuanYi Zen Hei", "儷黑 Pro", "LiHei Pro",
+          "SC Microsoft JhengHei UI", sans-serif;
+      }
+      @font-face {
+        font-family: 'SC Microsoft JhengHei UI';
+        font-style: normal;
+        font-weight: 500;
+        src: local("Microsoft JhengHei"),local("微軟正黑體");
+      }
+      body{
+        background-image: url("{{ static_url('background.jpg') }}");
+        background-repeat: repeat;
+        word-break: break-all;
+      }
+      a{
+        color: #a10;
+      }
+      a:hover,
+      a:active,
+      a:focus{
+        color: #a10;
+      }
+      .footer{
+        color: #633;
+      }
+      .footer-default{
+        text-align: center;
+      }
+      .web-border-a a{
+        color: #333;
+        border-bottom: 1px dashed #a10;
+      }
+      .web-border-a a:hover,
+      .web-border-a a:focus,
+      .web-border-a a:active{
+        color: #a10;
+        text-decoration: none;
+      }
+      .web-app-loader{
+        position: relative;
+        width: 100%;
+        height: 500px;
+      }
+      .web-app-loader-inner{
+        height: 180px;
+        width: 180px;
+      }
+      @-webkit-keyframes rotate_pacman_half_up {
+        0% {
+          -webkit-transform: rotate(270deg);
+                  transform: rotate(270deg); }
+        50% {
+          -webkit-transform: rotate(360deg);
+                  transform: rotate(360deg); }
+        100% {
+          -webkit-transform: rotate(270deg);
+                  transform: rotate(270deg); } }
+      @keyframes rotate_pacman_half_up {
+        0% {
+          -webkit-transform: rotate(270deg);
+            transform: rotate(270deg); }
+        50% {
+          -webkit-transform: rotate(360deg);
+                  transform: rotate(360deg); }
+        100% {
+          -webkit-transform: rotate(270deg);
+                  transform: rotate(270deg); } }
+
+      @-webkit-keyframes rotate_pacman_half_down {
+        0% {
+          -webkit-transform: rotate(90deg);
+                  transform: rotate(90deg); }
+        50% {
+          -webkit-transform: rotate(0deg);
+                  transform: rotate(0deg); }
+        100% {
+          -webkit-transform: rotate(90deg);
+                  transform: rotate(90deg); } }
+      @keyframes rotate_pacman_half_down {
+        0% {
+          -webkit-transform: rotate(90deg);
+                  transform: rotate(90deg); }
+        50% {
+          -webkit-transform: rotate(0deg);
+                  transform: rotate(0deg); }
+        100% {
+          -webkit-transform: rotate(90deg);
+                  transform: rotate(90deg); } }
+      @-webkit-keyframes pacman-balls {
+        75% {
+          opacity: 0.7; }
+        100% {
+          -webkit-transform: translate(-100px, -6.25px);
+                  transform: translate(-100px, -6.25px); } }
+      @keyframes pacman-balls {
+        75% {
+          opacity: 0.7; }
+        100% {
+          -webkit-transform: translate(-100px, -6.25px);
+                  transform: translate(-100px, -6.25px); } }
+      .pacman {
+        position: relative; }
+        .pacman > div:nth-child(2) {
+          -webkit-animation: pacman-balls 1s -0.99s infinite linear;
+                  animation: pacman-balls 1s -0.99s infinite linear; }
+        .pacman > div:nth-child(3) {
+          -webkit-animation: pacman-balls 1s -0.66s infinite linear;
+                  animation: pacman-balls 1s -0.66s infinite linear; }
+        .pacman > div:nth-child(4) {
+          -webkit-animation: pacman-balls 1s -0.33s infinite linear;
+                  animation: pacman-balls 1s -0.33s infinite linear; }
+        .pacman > div:nth-child(5) {
+          -webkit-animation: pacman-balls 1s 0s infinite linear;
+                  animation: pacman-balls 1s 0s infinite linear; }
+        .pacman > div:first-of-type {
+          width: 0px;
+          height: 0px;
+          border-right: 25px solid transparent;
+          border-top: 25px solid #fff;
+          border-left: 25px solid #fff;
+          border-bottom: 25px solid #fff;
+          border-radius: 25px;
+          -webkit-animation: rotate_pacman_half_up 0.5s 0s infinite;
+                  animation: rotate_pacman_half_up 0.5s 0s infinite;
+          position: relative;
+          left: -30px; }
+        .pacman > div:nth-child(2) {
+          width: 0px;
+          height: 0px;
+          border-right: 25px solid transparent;
+          border-top: 25px solid #fff;
+          border-left: 25px solid #fff;
+          border-bottom: 25px solid #fff;
+          border-radius: 25px;
+          -webkit-animation: rotate_pacman_half_down 0.5s 0s infinite;
+                  animation: rotate_pacman_half_down 0.5s 0s infinite;
+          margin-top: -50px;
+          position: relative;
+          left: -30px; }
+        .pacman > div:nth-child(3), .pacman > div:nth-child(4), .pacman > div:nth-child(5), .pacman > div:nth-child(6) {
+          background-color: #fff;
+          width: 15px;
+          height: 15px;
+          border-radius: 100%;
+          margin: 2px;
+          width: 10px;
+          height: 10px;
+          position: absolute;
+          -webkit-transform: translate(0, -6.25px);
+              -ms-transform: translate(0, -6.25px);
+                  transform: translate(0, -6.25px);
+          top: 25px;
+          left: 70px; }
+    </style>
+  </head>
+  <body>
+    <div id="fb-root"></div>
+    <div id="outdated"></div>
+    <div id="app">
+      <div class="web-app-loader">
+        <div class="web-app-loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      <hr>
+      <!-- <div class='footer footer-default'>
+        <h4>Mind Radar</h4>
+        <p>
+          版本：{{ system_version }} <br/>
+        </p>
+      </div> -->
+    </div>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      {% if not SERVER_DEBUG %}ga('create', 'UA-65186313-1', 'auto');{% end %}
+      ga('send', 'pageview');
+      window.sc_createEvent = function(name) {
+        if (typeof window.Event == "function") {
+          return new window.Event(name);
+        } else {
+          var event = document.createEvent('Event');
+          event.initEvent(name, true, false);
+          return event;
+        }
+      };
+      // window.fbAsyncInit = function() {
+      //   FB.init({
+      //     appId      : "JIZZ",
+      //     xfbml      : true,
+      //     version    : 'v2.4'
+      //   });
+      //   FB.Event.subscribe('xfbml.render', function(){
+      //     var fb_ele = document.getElementsByClassName('fb_ele');
+      //     for(var i=0;i<fb_ele.length;i++){
+      //       fb_ele[i].dispatchEvent(window.sc_createEvent('fb-onrander'));
+      //     }
+      //   });
+      // };
+      window.onload = function(){
+        {% for url in css_urls %}
+          var css = document.createElement('link'), fcss = document.getElementsByTagName('style')[0];
+          css.rel="stylesheet"; css.href="{{ url }}";
+          fcss.parentNode.insertBefore(css, fcss);
+        {% end %}
+        {% for url in js_urls %}
+          var js = document.createElement('script');
+          js.src="{{ url }}";
+          // js.onload = function(){
+          //   if(!outdatedBrowserSupports)return;
+          //   (function(d, s, id){
+          //     var js, fjs = d.getElementsByTagName(s)[0];
+          //     if (d.getElementById(id)) return;
+          //     js = d.createElement(s); js.id = id;
+          //     var locale = (window.navigator.userLanguage || window.navigator.language || 'en_US').replace(/-/, '_');
+          //     js.src = '//connect.facebook.net/'+ locale +'/sdk.js';
+          //     fjs.parentNode.insertBefore(js, fjs);
+          //   }(document, 'script', 'facebook-jssdk'));
+          //   var current_user = {% raw current_user and json_encode(current_user) or 'null' %};
+          //   React.render(React.createElement(RM.App, {history: true,current_user:current_user}),document.getElementById('app'));
+          // };
+          // document.getElementsByTagName('head')[0].appendChild(js);
+        {% end %}
+      }
+    </script>
+  </body>
+</html>
