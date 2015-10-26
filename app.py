@@ -60,9 +60,11 @@ def make_app(route):
 if __name__ == '__main__':
     check_db()
     app = make_app([
-        (r"/", IndexHandler),
-        (r"/radar/?", ViewHandler),
-        (r"/radar/edit/?", EditHandler),
+        (r"/", AppHandler, {'static_path': os.path.join(os.path.dirname(__file__), 'static')}),
+
+        (r"/api", IndexHandler),
+        (r"/api/radar/?", ViewHandler),
+        (r"/api/radar/edit/?", EditHandler),
     ])
     server = HTTPServer(app, xheaders=True)
     server.listen(options.port)

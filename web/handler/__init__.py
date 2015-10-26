@@ -79,7 +79,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class AppHandler(BaseHandler):
     def initialize(self, static_path, **kw):
-        super(AppHandler, self).initialize(*a, **kw)
+        super(AppHandler, self).initialize(**kw)
         self.static_path = static_path
 
     def get_template_namespace(self):
@@ -95,9 +95,9 @@ class AppHandler(BaseHandler):
         js_all = Bundle(
                 Bundle(
                     'outdatedbrowser/outdatedbrowser.min.js',
-                    'react-0.13.2/react-with-addons.min.js',
+                    'js/react-0.13.2/react-with-addons.min.js',
                     'js/jquery-2.1.3.min.js',
-                    'js/bootstrap.min.js',
+                    'js/bootstrap-3.3.4.min.js',
                     'js/react-bootstrap.min.js',
                     'js/react-mini-router.min.js',
                     'js/marked.min.js',
